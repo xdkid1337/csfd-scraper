@@ -8,9 +8,9 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-authors = ["ČSFD Scraper Contributors"]
+authors = ["xdkid1337"]
 license = "MIT"
-repository = "https://github.com/example/csfd-scraper"
+repository = "https://github.com/xdkid1337/csfd-scraper"
 
 [workspace.dependencies]
 # Async runtime
