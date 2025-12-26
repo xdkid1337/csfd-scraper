@@ -5,6 +5,9 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+keywords = ["csfd", "scraper", "czech", "movies", "series"]
+categories = ["web-programming", "parser-implementations"]
 
 [dependencies]
 tokio = { workspace = true }

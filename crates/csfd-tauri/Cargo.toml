@@ -5,9 +5,12 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+keywords = ["csfd", "tauri", "czech", "movies"]
+categories = ["gui"]
 
 [dependencies]
-csfd-core = { path = "../csfd-core" }
+csfd-core = { path = "../csfd-core", version = "0.1.0" }
 tauri = { workspace = true }
 tokio = { workspace = true }
 serde = { workspace = true }
