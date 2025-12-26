@@ -6,11 +6,12 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "README.md"
 keywords = ["csfd", "tauri", "czech", "movies"]
 categories = ["gui"]
 
 [dependencies]
-csfd-core = { path = "../csfd-core", version = "0.1.0" }
+csfd-core = { path = "../csfd-core", version = "0.1.1" }
 tauri = { workspace = true }
 tokio = { workspace = true }
 serde = { workspace = true }
