@@ -1,0 +1,17 @@
+[package]
+name = "csfd-tauri"
+description = "Tauri integration for ČSFD Scraper"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+csfd-core = { path = "../csfd-core" }
+tauri = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

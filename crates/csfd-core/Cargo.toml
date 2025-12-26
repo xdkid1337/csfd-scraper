@@ -1,0 +1,21 @@
+[package]
+name = "csfd-core"
+description = "Core scraping library for ČSFD.cz (Česko-Slovenská filmová databáze)"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+tokio = { workspace = true }
+reqwest = { workspace = true }
+scraper = { workspace = true }
+regex-lite = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+urlencoding = "2.1"
+
+[dev-dependencies]
+proptest = { workspace = true }
+wiremock = { workspace = true }
