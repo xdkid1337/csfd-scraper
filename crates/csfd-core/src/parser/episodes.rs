@@ -95,14 +95,20 @@ fn parse_episode_from_h3(h3: &scraper::ElementRef) -> Option<Episode> {
     // Get URL
     let url = link.value().attr("href")?.to_string();
     
-    // Extract CSFD ID
-    let csfd_id = extract_episode_id(&url)?;
-    
     // Get name from link text
     let name = link.text().collect::<String>().trim().to_string();
     if name.is_empty() {
         return None;
     }
+    
+    // Skip season links - they have names like "Série 1", "Série 2", etc.
+    // and their URLs end with /prehled/ (not episode URLs which have episode codes)
+    if is_season_link(&name, &url) {
+        return None;
+    }
+    
+    // Extract CSFD ID
+    let csfd_id = extract_episode_id(&url)?;
     
     // Get info from span.film-title-info - contains episode code like "(S01E01)"
     let info_selector = Selector::parse(".film-title-info").ok()?;
@@ -129,6 +135,33 @@ fn parse_episode_from_h3(h3: &scraper::ElementRef) -> Option<Episode> {
         rating,
         url,
     })
+}
+
+/// Check if a link is a season link rather than an episode link.
+/// Season links have names like "Série 1" and URLs ending in /prehled/
+fn is_season_link(name: &str, url: &str) -> bool {
+    // Season names match pattern "Série X" or "Season X"
+    let season_pattern = regex_lite::Regex::new(r"(?i)^(série|season|řada)\s*\d+$").unwrap();
+    if season_pattern.is_match(name.trim()) {
+        return true;
+    }
+    
+    // Season URLs typically end with /{season_id}-serie-X/prehled/
+    // Episode URLs have the episode slug and end with /prehled/ but contain episode info
+    if url.contains("-serie-") && url.ends_with("/prehled/") {
+        // Check if URL path has only series_id/season_id (no episode segment)
+        let parts: Vec<&str> = url.trim_matches('/').split('/').collect();
+        // Season URL: /film/{series_id}-slug/{season_id}-serie-X/prehled/
+        // Episode URL: /film/{series_id}-slug/{episode_id}-episode-slug/prehled/
+        if parts.len() >= 3 {
+            let last_segment = parts[parts.len() - 2]; // segment before "prehled"
+            if last_segment.contains("-serie-") {
+                return true;
+            }
+        }
+    }
+    
+    false
 }
 
 /// Extract episode ID from URL (the episode part of the path).
@@ -496,5 +529,37 @@ mod tests {
         assert_eq!(extract_season_number_from_text("Season 2"), Some(2));
         assert_eq!(extract_season_number_from_text("S3"), Some(3));
         assert_eq!(extract_season_number_from_text("no season"), None);
+    }
+
+    #[test]
+    fn test_is_season_link() {
+        // Season links should be detected
+        assert!(is_season_link("Série 1", "/film/234260-teorie-velkeho-tresku/470330-serie-1/prehled/"));
+        assert!(is_season_link("Série 12", "/film/234260-teorie-velkeho-tresku/628856-serie-12/prehled/"));
+        assert!(is_season_link("Season 5", "/film/123/456-serie-5/prehled/"));
+        
+        // Episode links should NOT be detected as seasons
+        assert!(!is_season_link("Pilot", "/film/234260-teorie-velkeho-tresku/628857-pilot/prehled/"));
+        assert!(!is_season_link("Manželský kompromis", "/film/234260/628857-manzelsky-kompromis/prehled/"));
+        assert!(!is_season_link("The One Where Monica Gets a Roommate", "/film/123/456-episode/prehled/"));
+    }
+
+    #[test]
+    fn test_parse_episodes_filters_season_links() {
+        // HTML with season links (like main episodes page)
+        let html = r#"
+        <html><body>
+            <h3 class="film-title">
+                <a class="film-title-name" href="/film/234260/470330-serie-1/prehled/">Série 1</a>
+            </h3>
+            <h3 class="film-title">
+                <a class="film-title-name" href="/film/234260/470348-serie-2/prehled/">Série 2</a>
+            </h3>
+        </body></html>
+        "#;
+        
+        let result = parse_episodes(html).unwrap();
+        // Should return empty - these are season links, not episodes
+        assert!(result.is_empty(), "Season links should be filtered out, got {:?}", result);
     }
 }
